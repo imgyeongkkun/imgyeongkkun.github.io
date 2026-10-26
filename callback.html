@@ -1,0 +1,38 @@
+<!doctype html>
+<html lang="ko"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>로그인 처리 중 - 스마트 홈 대시보드</title><link rel="stylesheet" href="style.css"></head>
+<body><main>
+<h1 id="t">대시보드로 돌아가는 중…</h1>
+<p class="sub" id="m">잠시만 기다려 주세요.</p>
+</main>
+<script>
+// 구글 로그인 결과(1회용 코드)를 같은 와이파이의 라즈베리파이로 넘겨주는 중계 페이지
+// 집 안 주소(내부망)로만 넘겨주고, 다른 인터넷 주소로는 절대 보내지 않아요.
+(function () {
+  var q = location.search;
+  var state = new URLSearchParams(q).get('state') || '';
+  var part = state.split('.')[1] || '';
+  var back = '';
+  try {
+    part = part.replace(/-/g, '+').replace(/_/g, '/');
+    back = atob(part + '='.repeat((4 - part.length % 4) % 4));
+  } catch (e) {}
+  var ok = false, u;
+  try {
+    u = new URL(back);
+    var h = u.hostname;
+    ok = (u.protocol === 'http:' || u.protocol === 'https:') && u.origin === back &&
+      (h === 'localhost' || h === '127.0.0.1' || /\.local$/.test(h) ||
+       /^10\.\d+\.\d+\.\d+$/.test(h) || /^192\.168\.\d+\.\d+$/.test(h) ||
+       /^172\.(1[6-9]|2\d|3[01])\.\d+\.\d+$/.test(h));
+  } catch (e) {}
+  if (ok) {
+    location.replace(u.origin + '/google/callback' + q);
+  } else {
+    document.getElementById('t').textContent = '대시보드로 돌아갈 수 없어요';
+    document.getElementById('m').textContent = '대시보드 화면의 설정 → 구글 캘린더에서 다시 연결해 주세요.';
+  }
+})();
+</script>
+</body></html>
